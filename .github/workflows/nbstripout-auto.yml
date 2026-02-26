@@ -1,0 +1,43 @@
+name: Auto-strip notebook outputs
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "**"
+
+permissions:
+  contents: write
+
+jobs:
+  nbstripout:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install nbstripout
+        run: pip install nbstripout
+
+      - name: Strip outputs from tracked notebooks
+        run: |
+          notebooks=$(git ls-files '*.ipynb')
+          if [ -n "$notebooks" ]; then
+            echo "$notebooks" | xargs nbstripout
+          else
+            echo "No tracked notebooks found."
+          fi
+
+      - name: Commit and push changes if needed
+        run: |
+          git config --global user.name 'nbstripout_bot'
+          git config --global user.email 'therauch1@users.noreply.github.com'
+          git commit -am "ran nbstripout"
+          git push
