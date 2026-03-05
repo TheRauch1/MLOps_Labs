@@ -1,0 +1,87 @@
+name: Notebook output hygiene
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "**"
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  nbstripout-check:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install nbstripout
+        run: pip install nbstripout
+
+      - name: Strip outputs from tracked notebooks
+        run: |
+          notebooks=$(git ls-files '*.ipynb')
+          if [ -n "$notebooks" ]; then
+            echo "$notebooks" | xargs nbstripout
+          else
+            echo "No tracked notebooks found."
+          fi
+
+      - name: Ensure notebooks are already stripped
+        run: |
+          if git diff --quiet -- '*.ipynb'; then
+            echo "All notebooks are stripped."
+            exit 0
+          fi
+
+          echo "Notebooks are not stripped. Run nbstripout locally and commit the result."
+          git diff -- '*.ipynb'
+          exit 1
+
+  nbstripout-autofix:
+    if: github.event_name == 'push' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install nbstripout
+        run: pip install nbstripout
+
+      - name: Strip outputs from tracked notebooks
+        run: |
+          notebooks=$(git ls-files '*.ipynb')
+          if [ -n "$notebooks" ]; then
+            echo "$notebooks" | xargs nbstripout
+          else
+            echo "No tracked notebooks found."
+          fi
+
+      - name: Commit and push changes if needed
+        run: |
+          if git diff --quiet -- '*.ipynb'; then
+            echo "No notebook changes after nbstripout."
+            exit 0
+          fi
+
+          git config --global user.name 'nbstripout_bot'
+          git config --global user.email 'therauch1@users.noreply.github.com'
+          git commit -am "ran nbstripout"
+          git push
