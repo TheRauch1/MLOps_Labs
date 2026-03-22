@@ -14,7 +14,10 @@ fi
 if [ "$#" -gt 0 ]; then
   notebooks=("$@")
 else
-  mapfile -t notebooks < <(git -C "$REPO_ROOT" ls-files '*.ipynb')
+  notebooks=()
+  while IFS= read -r nb; do
+    [[ -n "$nb" ]] && notebooks+=("$nb")
+  done < <(git -C "$REPO_ROOT" ls-files '*.ipynb')
 fi
 
 if [ "${#notebooks[@]}" -eq 0 ]; then
