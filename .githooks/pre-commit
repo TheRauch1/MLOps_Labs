@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+SCRIPT="$REPO_ROOT/scripts/nbstripout.sh"
+
+# Only process notebooks that are staged
+staged=()
+while IFS= read -r nb; do
+  [[ -n "$nb" ]] && staged+=("$nb")
+done < <(git diff --cached --name-only --diff-filter=ACM -- '*.ipynb')
+
+if [ "${#staged[@]}" -eq 0 ]; then
+  exit 0
+fi
+
+echo "Running nbstripout on staged notebooks..."
+bash "$SCRIPT" "${staged[@]}"
+
+# Re-stage the stripped files
+git add "${staged[@]}"

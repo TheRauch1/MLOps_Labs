@@ -19,6 +19,24 @@ This is the repository for the labs/tutorials of a course about Machine Learning
 |      | Vertex AI tutorial | Google cloud Vertex AI | [VertexAI](VertexAI/README.md) |
 |      | Example showing how to use python packages with Jupyter Notebooks | Jupyter | [Sample](sample/readme.md)
 
+## Contributing
+
+### Notebook hygiene (nbstripout)
+
+We strip notebook outputs before committing to keep diffs clean. This runs automatically via a git pre-commit hook inside a Docker container — no local Python install needed.
+
+**Requires [Docker](https://www.docker.com/products/docker-desktop/) to be running.**
+
+After cloning, run once to activate the hook and clean notebook diffs:
+
+```shell
+git config core.hooksPath .githooks
+git config diff.ipynb.textconv scripts/nbstripout-textconv.sh
+git config diff.ipynb.cachetextconv true
+```
+
+The first commit or diff touching a notebook will build the Docker image automatically. Subsequent runs reuse it.
+
 ## Setup
 
 We use `conda` environments to manage the lab dependencies. Every lab has its own conda environment. Install [Anaconda](https://www.anaconda.com/download/), [Miniconda](https://docs.conda.io/projects/miniconda/en/latest/miniconda-install.html) or [Mamba](https://mamba.readthedocs.io/en/latest/) for your platform.

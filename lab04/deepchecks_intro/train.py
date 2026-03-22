@@ -1,19 +1,16 @@
+import os
+
 import albumentations as A
 import numpy as np
 import PIL.Image
 import torch
 import torchvision
 from albumentations.pytorch import ToTensorV2
+from data import AntsBeesDataset
 from torch import nn
 from torch.utils.data import DataLoader
 
-import os
-
-from data import AntsBeesDataset
-
-
 if __name__ == "__main__":
-
     data_dir = "./hymenoptera_data"
 
     # Just normalization for validation
@@ -69,7 +66,7 @@ if __name__ == "__main__":
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
-            print(epoch,i,loss.detach().numpy())
+            print(epoch, i, loss.detach().cpu().numpy())
 
     print("Finished Training")
 
