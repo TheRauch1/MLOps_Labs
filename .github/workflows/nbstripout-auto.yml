@@ -76,7 +76,7 @@ jobs:
             echo "No tracked notebooks found."
           fi
 
-      - name: Squash and push changes if needed
+      - name: Commit and push stripped notebooks if needed
         run: |
           if git diff --quiet -- '*.ipynb'; then
             echo "No notebook changes after nbstripout."
@@ -89,8 +89,7 @@ jobs:
           # Stage the notebook changes
           git add -u '*.ipynb'
 
-          # Amend the previous commit with stripped notebooks
-          git commit --amend --no-edit
+          # Create a new commit (not amend) so local history is never rewritten
+          git commit -m "chore: strip notebook outputs [skip ci]"
 
-          # Force push the amended commit
-          git push --force-with-lease
+          git push
