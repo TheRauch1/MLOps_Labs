@@ -56,6 +56,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -74,7 +76,7 @@ jobs:
             echo "No tracked notebooks found."
           fi
 
-      - name: Commit and push changes if needed
+      - name: Squash and push changes if needed
         run: |
           if git diff --quiet -- '*.ipynb'; then
             echo "No notebook changes after nbstripout."
@@ -83,5 +85,12 @@ jobs:
 
           git config --global user.name 'nbstripout_bot'
           git config --global user.email 'therauch1@users.noreply.github.com'
-          git commit -am "ran nbstripout"
-          git push
+
+          # Stage the notebook changes
+          git add -u '*.ipynb'
+
+          # Amend the previous commit with stripped notebooks
+          git commit --amend --no-edit
+
+          # Force push the amended commit
+          git push --force-with-lease

@@ -1,0 +1,10 @@
+albumentations
+deepchecks
+torch
+torchvision
+pytest
+pytorch-ignite
+scikit-learn
+scikit-image
+numpy
+setuptools
